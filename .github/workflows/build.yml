@@ -1,9 +1,13 @@
-name: Create docker image
+
+name: Docker Image CI
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*'
+
+env:
+  IMAGE_NAME: php
 
 jobs:
   build:
@@ -11,23 +15,26 @@ jobs:
     if: github.event_name == 'push'
 
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Prepare
-        id: prep
-        run: |
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          TAGS="ghcr.io/tohtamysh/php:latest,ghcr.io/tohtamysh/php:$VERSION,ghcr.io/tohtamysh/php:$(echo $VERSION | sed -e 's/\(.*\)\..*/\1/')"
-          echo ::set-output name=tags::${TAGS}
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          registry: docker.pkg.github.com
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.TOKEN }}
-      - name: Push to GitHub Packages
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          tags: ${{ steps.prep.outputs.tags }}
+    - uses: actions/checkout@v2
+
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag $IMAGE_NAME
+
+    - name: Log into GitHub Container Registry
+      run: echo "${{ secrets.TOKEN }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
+      
+    - name: Push mage to GitHub Container Registry
+      run: |
+        IMAGE_ID=ghcr.io/${{ github.actor }}/$IMAGE_NAME
+        # Change all uppercase to lowercase
+        IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+        # Strip git ref prefix from version
+        VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+        # Strip "v" prefix from tag name
+        [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+        echo IMAGE_ID=$IMAGE_ID
+        echo VERSION=$VERSION
+        docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+        docker tag $IMAGE_NAME $IMAGE_ID:$(echo $VERSION | sed -e 's/\(.*\)\..*/\1/')
+        docker tag $IMAGE_NAME $IMAGE_ID:latest
+        docker push $IMAGE_ID
