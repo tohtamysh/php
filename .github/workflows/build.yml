@@ -18,7 +18,7 @@ jobs:
         run: |
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          TAGS="latest,$VERSION,$(echo $VERSION | sed -e 's/\(.*\)\..*/\1/')"
+          TAGS="tohtamysh/php:latest,tohtamysh/php:$VERSION,tohtamysh/php:$(echo $VERSION | sed -e 's/\(.*\)\..*/\1/')"
           echo ::set-output name=tags::${TAGS}
       - name: Login to DockerHub
         uses: docker/login-action@v1
@@ -29,5 +29,6 @@ jobs:
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v2
         with:
-          repository: tohtamysh/php
+          context: .
+          push: true
           tags: ${{ steps.prep.outputs.tags }}
