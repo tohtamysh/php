@@ -23,12 +23,11 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.TOKEN }}
           registry: docker.pkg.github.com
+          username: ${{ ${{ github.repository_owner }} }}
+          password: ${{ secrets.TOKEN }}
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v2
         with:
-          context: .
           push: true
           tags: ${{ steps.prep.outputs.tags }}
