@@ -46,13 +46,6 @@ RUN set -xe \
     && docker-php-ext-install -j$(nproc) exif \
     && : "---------- Bcmath ----------" \
     && docker-php-ext-install -j$(nproc) bcmath \
-    && : "---------- Xdebug ----------" \
-    && git clone --depth 1 https://github.com/xdebug/xdebug.git /tmp/xdebug \
-    && cd /tmp/xdebug \
-    && phpize \
-    && ./configure \
-    && make && make install \
-    && echo "extension=xdebug.so" > /usr/local/etc/php/conf.d/ext-xdebug.ini \
     && : "---------- Cleanup ----------" \
     && apk del .build-deps \
     && rm -rf /var/cache/apk/* /var/tmp/* /tmp/*
