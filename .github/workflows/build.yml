@@ -13,11 +13,18 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+      - name: Prepare
+         id: prep
+         run: |
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          TAGS="latest,$VERSION,$(echo $VERSION | sed -e 's/\(.*\)\..*/\1/')"
+          echo ::set-output name=tags::${TAGS}
       - name: Push to GitHub Packages
-        uses: jerray/publish-docker-action@master
+        uses: docker/build-push-action@v2
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.TOKEN }}
           registry: docker.pkg.github.com
           repository: tohtamysh/php
-          auto_tag: true
+          tags: ${{ steps.prep.outputs.tags }}
