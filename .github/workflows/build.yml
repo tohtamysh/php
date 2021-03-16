@@ -13,16 +13,11 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Prepare
-        id: prep
-        run: |
-          TAGS="latest,${GITHUB_REF#refs/tags/},$(echo ${GITHUB_REF#refs/tags/} | sed -e 's/\(.*\)\..*/\1/')"
-          echo ::set-output name=tags::${TAGS}
       - name: Push to GitHub Packages
-        uses: docker/build-push-action@v1
+        uses: jerray/publish-docker-action@master
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.TOKEN }}
           registry: docker.pkg.github.com
           repository: tohtamysh/php/php
-          tags: ${{ steps.prep.outputs.tags }}
+          auto_tag: true
