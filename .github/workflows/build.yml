@@ -3,7 +3,6 @@ name: Docker Image CI
 on:
   push:
     tags:
-      - 'v*.*'
       - 'v*.*.*'
 
 jobs:
@@ -20,7 +19,10 @@ jobs:
           DOCKER_IMAGE=ghcr.io/tohtamysh/php
           VERSION=$(echo "${GITHUB_REF#refs/tags/}" | sed -e 's,.*/\(.*\),\1,')
           VERSION=$(echo $VERSION | sed -e 's/^v//')
-          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:$(echo $VERSION | sed -e 's/\(.*\)\..*/\1/')"
+          MAJOR=`echo $VERSION | cut -d. -f1`
+          MINOR=`echo $VERSION | cut -d. -f2`
+          REVISION=`echo $VERSION | cut -d. -f3`
+          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${MAJOR},${DOCKER_IMAGE}:${MAJOR}.${MINOR},${DOCKER_IMAGE}:${MAJOR}.${MINOR}.${REVISION}"
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=tags::${TAGS}
       
