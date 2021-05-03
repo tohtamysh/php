@@ -1,4 +1,4 @@
-FROM php:8.0.3-fpm-alpine
+FROM php:8.0.5-fpm-alpine
 
 RUN set -xe \
 	&& apk add --no-cache --virtual .build-deps $PHPIZE_DEPS git zip unzip zlib-dev coreutils \
@@ -26,7 +26,7 @@ RUN set -xe \
     && make && make install \
     && echo "extension=ds.so" > /usr/local/etc/php/conf.d/ext-ds.ini \
     && : "---------- Redis ----------" \
-    && REDIS_TAG="5.3.3" \
+    && REDIS_TAG="5.3.4" \
     && git clone -o ${REDIS_TAG} --depth 1 https://github.com/phpredis/phpredis.git /tmp/phpredis \
     && cd /tmp/phpredis \
     && phpize \
