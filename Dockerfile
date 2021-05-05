@@ -1,4 +1,4 @@
-FROM php:8.0.5-fpm-alpine
+FROM php:8.0.3-fpm-alpine
 
 RUN set -xe \
 	&& apk add --no-cache --virtual .build-deps $PHPIZE_DEPS git zip unzip zlib-dev coreutils \
@@ -49,6 +49,8 @@ RUN set -xe \
     && docker-php-ext-install -j$(nproc) exif \
     && : "---------- Bcmath ----------" \
     && docker-php-ext-install -j$(nproc) bcmath \
+    && : "---------- Opcache ----------" \
+    && docker-php-ext-install -j$(nproc) opcache \
     && : "---------- Cleanup ----------" \
     && apk del .build-deps \
     && rm -rf /var/cache/apk/* /var/tmp/* /tmp/*
