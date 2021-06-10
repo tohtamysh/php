@@ -1,7 +1,15 @@
 FROM php:8.0.7-fpm-alpine
 
-RUN set -xe \
-	&& apk add --no-cache --virtual .build-deps $PHPIZE_DEPS git zip unzip zlib-dev coreutils \
+RUN set -x \
+    && echo https://dl-4.alpinelinux.org/alpine/v3.13/community/ >> /etc/apk/repositories \
+    && apk update \
+    && apk upgrade \
+    && apk add \
+        bash \
+        ca-certificates \
+        openssl \
+    && update-ca-certificates \
+    && apk add --virtual .build-deps $PHPIZE_DEPS git zip unzip zlib-dev coreutils \
     && : "---------- Imagemagick ----------" \
     && apk add --no-cache --virtual .imagick-build-dependencies imagemagick-dev \
     && apk add --virtual .imagick-runtime-dependencies imagemagick \
@@ -14,61 +22,50 @@ RUN set -xe \
     && echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini \
     && apk del .imagick-build-dependencies \
     && : "---------- GD ----------" \
-    && apk add --no-cache --virtual .gd-build-dependencies freetype-dev libjpeg-turbo-dev libjpeg-turbo libpng-dev jpeg-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && apk add --no-cache --virtual .gd-build-dependencies freetype-dev libjpeg-turbo-dev libpng-dev vips-dev \
+    && apk add vips \
+    && docker-php-ext-configure gd --with-jpeg --with-freetype --with-webp \
     && docker-php-ext-install -j$(nproc) gd \
+    && apk del .gd-build-dependencies \
     && : "---------- DS ----------" \
-    && DS_TAG="1.3.0" \
-    && git clone -o ${DS_TAG} --depth 1 https://github.com/php-ds/ext-ds.git /tmp/ds \
-    && cd /tmp/ds \
-    && phpize \
-    && ./configure \
-    && make && make install \
-    && echo "extension=ds.so" > /usr/local/etc/php/conf.d/ext-ds.ini \
+    && pecl install ds \
+    && docker-php-ext-enable ds \
     && : "---------- Redis ----------" \
-    && REDIS_TAG="5.3.4" \
-    && git clone -o ${REDIS_TAG} --depth 1 https://github.com/phpredis/phpredis.git /tmp/phpredis \
-    && cd /tmp/phpredis \
-    && phpize \
-    && ./configure \
-    && make && make install \
-    && echo "extension=redis.so" > /usr/local/etc/php/conf.d/ext-redis.ini \
-    && apk add --virtual .memcached-runtime-dependencies libmemcached-libs \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && : "---------- Memcached ----------" \
     && apk add --no-cache --virtual .memcached-build-dependencies libmemcached-dev \
-    && MEMCACHED_URL="https://pecl.php.net/get/memcached-3.1.5.tgz" \
-    && pecl install igbinary \
-    && docker-php-ext-enable igbinary \
-    && mkdir -p /tmp/memcached \
-    && curl -fsSL "$MEMCACHED_URL" -o memcached.tgz \
-    && tar -xf memcached.tgz -C /tmp/memcached --strip-components=1 \
-    && rm memcached.tgz \
-    && docker-php-ext-configure /tmp/memcached --enable-memcached-session --enable-memcached-igbinary --enable-memcached-json \
-    && docker-php-ext-install /tmp/memcached \
+    && apk add libmemcached \
+    && pecl install memcached \
+    && docker-php-ext-enable memcached \
     && apk del .memcached-build-dependencies \
-    && : "---------- Postgres ----------" \
-    && apk add --no-cache --virtual .postgresql-build-dependencies postgresql-dev \
-    && apk add --virtual .postgresql-runtime-dependencies libpq \
-    && docker-php-ext-install -j$(nproc) pdo_pgsql \
-    && apk del .postgresql-build-dependencies \
     && : "---------- Mysql ----------" \
     && docker-php-ext-install -j$(nproc) pdo_mysql mysqli \
-    && : "---------- Zip ----------" \
-    && apk add --no-cache --virtual .zip-build-dependencies libzip-dev \
-    && apk add --virtual .zip-runtime-dependencies libzip \
-    && docker-php-ext-configure zip --with-libzip \
-    && docker-php-ext-install -j$(nproc) zip \
-    && apk del .zip-build-dependencies \
-    && : "---------- Soap ----------" \
-    && apk add --no-cache --virtual .soap-build-dependencies libxml2-dev \
-    && docker-php-ext-install -j$(nproc) soap \
-    && apk del .soap-build-dependencies \
+    && : "---------- Postgres ----------" \
+    && apk add --no-cache --virtual .postgresql-build-dependencies postgresql-dev \
+    && apk add libpq \
+    && docker-php-ext-install -j$(nproc) pdo_pgsql \
+    && apk del .postgresql-build-dependencies \
     && : "---------- Exif ----------" \
     && docker-php-ext-install -j$(nproc) exif \
     && : "---------- Bcmath ----------" \
     && docker-php-ext-install -j$(nproc) bcmath \
     && : "---------- Opcache ----------" \
     && docker-php-ext-install -j$(nproc) opcache \
+    && : "---------- Intl ----------" \
+    && apk add icu-libs libintl \
+    && apk add --no-cache --virtual .intl-build-dependencies icu-dev \
+    && docker-php-ext-install -j$(nproc) intl \
+    && apk del .intl-build-dependencies \
+    && : "---------- Soap ----------" \
+    && apk add --no-cache --virtual .soap-build-dependencies libxml2-dev \
+    && docker-php-ext-install -j$(nproc) soap \
+    && apk del .soap-build-dependencies \
+    && : "---------- Zip ----------" \
+    && apk add --no-cache --virtual .zip-build-dependencies libzip-dev \
+    && apk add libzip \
+    && docker-php-ext-install -j$(nproc) zip \
+    && apk del .zip-build-dependencies \
     && : "---------- Cleanup ----------" \
     && apk del .build-deps \
     && rm -rf /var/cache/apk/* /var/tmp/* /tmp/*
