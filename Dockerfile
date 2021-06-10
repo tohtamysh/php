@@ -1,4 +1,4 @@
-FROM php:8.0.6-fpm-alpine
+FROM php:8.0.7-fpm-alpine
 
 RUN set -xe \
 	&& apk add --no-cache --virtual .build-deps $PHPIZE_DEPS git zip unzip zlib-dev coreutils \
@@ -33,6 +33,19 @@ RUN set -xe \
     && ./configure \
     && make && make install \
     && echo "extension=redis.so" > /usr/local/etc/php/conf.d/ext-redis.ini \
+    && apk add --virtual .memcached-runtime-dependencies libmemcached-libs \
+    && : "---------- Memcached ----------" \
+    && apk add --no-cache --virtual .memcached-build-dependencies libmemcached-dev \
+    && MEMCACHED_URL="https://pecl.php.net/get/memcached-3.1.5.tgz" \
+    && pecl install igbinary \
+    && docker-php-ext-enable igbinary \
+    && mkdir -p /tmp/memcached \
+    && curl -fsSL "$MEMCACHED_URL" -o memcached.tgz \
+    && tar -xf memcached.tgz -C /tmp/memcached --strip-components=1 \
+    && rm memcached.tgz \
+    && docker-php-ext-configure /tmp/memcached --enable-memcached-session --enable-memcached-igbinary --enable-memcached-json \
+    && docker-php-ext-install /tmp/memcached \
+    && apk del .memcached-build-dependencies \
     && : "---------- Postgres ----------" \
     && apk add --no-cache --virtual .postgresql-build-dependencies postgresql-dev \
     && apk add --virtual .postgresql-runtime-dependencies libpq \
@@ -43,8 +56,13 @@ RUN set -xe \
     && : "---------- Zip ----------" \
     && apk add --no-cache --virtual .zip-build-dependencies libzip-dev \
     && apk add --virtual .zip-runtime-dependencies libzip \
+    && docker-php-ext-configure zip --with-libzip \
     && docker-php-ext-install -j$(nproc) zip \
     && apk del .zip-build-dependencies \
+    && : "---------- Soap ----------" \
+    && apk add --no-cache --virtual .soap-build-dependencies libxml2-dev \
+    && docker-php-ext-install -j$(nproc) soap \
+    && apk del .soap-build-dependencies \
     && : "---------- Exif ----------" \
     && docker-php-ext-install -j$(nproc) exif \
     && : "---------- Bcmath ----------" \
