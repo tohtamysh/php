@@ -1,25 +1,23 @@
 FROM php:8.0.7-fpm-alpine
 
-RUN set -x \
+RUN set -eux \
     && echo https://dl-4.alpinelinux.org/alpine/v3.13/community/ >> /etc/apk/repositories \
-    && apk update \
-    && apk upgrade \
     && apk add \
-        bash \
         ca-certificates \
-        openssl \
+        tzdata \
     && update-ca-certificates \
     && apk add --virtual .build-deps $PHPIZE_DEPS git zip unzip zlib-dev coreutils \
     && : "---------- Imagemagick ----------" \
     && apk add --no-cache --virtual .imagick-build-dependencies imagemagick-dev \
-    && apk add --virtual .imagick-runtime-dependencies imagemagick \
-    && IMAGICK_TAG="3.4.4" \
-    && git clone -o ${IMAGICK_TAG} --depth 1 https://github.com/mkoppanen/imagick.git /tmp/imagick \
-    && cd /tmp/imagick \
-    && phpize \
-    && ./configure \
-    && make && make install \
-    && echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini \
+    && apk add imagemagick freetype gettext \
+    && git clone --depth=1 https://github.com/Imagick/imagick \
+    && cd imagick \
+    && phpize && ./configure \
+    && make -j$(nproc) \
+    && make install \
+    && cd ../ \
+    && rm -rf imagick \
+    && docker-php-ext-enable imagick \
     && apk del .imagick-build-dependencies \
     && : "---------- GD ----------" \
     && apk add --no-cache --virtual .gd-build-dependencies freetype-dev libjpeg-turbo-dev libpng-dev vips-dev \
