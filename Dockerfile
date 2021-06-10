@@ -66,6 +66,7 @@ RUN set -eux \
     && apk del .zip-build-dependencies \
     && : "---------- Cleanup ----------" \
     && apk del .build-deps \
+    && docker-php-source delete \
     && rm -rf /var/cache/apk/* /var/tmp/* /tmp/*
     
 RUN mv /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
