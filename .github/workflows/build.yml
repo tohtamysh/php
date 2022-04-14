@@ -47,7 +47,7 @@ jobs:
           file: ./Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           push: true
-          platforms: linux/arm64, linux/amd64
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.prep.outputs.tags }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
