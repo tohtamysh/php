@@ -1,7 +1,7 @@
-FROM php:8.1.22-fpm-alpine
+FROM php:8.2.10-fpm-alpine
 
 RUN set -eux \
-    && echo https://dl-4.alpinelinux.org/alpine/v3.13/community/ >> /etc/apk/repositories \
+    && echo https://dl-4.alpinelinux.org/alpine/v3.17/community/ >> /etc/apk/repositories \
     && apk add \
         ca-certificates \
         tzdata \
