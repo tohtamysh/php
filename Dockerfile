@@ -1,7 +1,7 @@
 FROM php:8.3.0-fpm-alpine
 
 RUN set -eux \
-    && echo https://dl-4.alpinelinux.org/alpine/v3.18/community/ >> /etc/apk/repositories \
+    && echo https://dl-4.alpinelinux.org/alpine/v3.19/community/ >> /etc/apk/repositories \
     && apk update \
     && apk upgrade \
     && apk add \
