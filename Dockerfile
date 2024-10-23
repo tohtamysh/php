@@ -66,6 +66,9 @@ RUN set -eux \
     && apk add libzip \
     && docker-php-ext-install -j$(nproc) zip \
     && apk del .zip-build-dependencies \
+    && : "---------- PCNTL ----------" \
+    && docker-php-ext-configure pcntl --enable-pcntl \
+    && docker-php-ext-install pcntl \
     && : "---------- Cleanup ----------" \
     && apk del .build-deps \
     && docker-php-source delete \
