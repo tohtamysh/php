@@ -7,6 +7,7 @@ RUN set -eux \
         ca-certificates \
         tzdata \
     && update-ca-certificates \
+    && apk add --virtual .build-deps $PHPIZE_DEPS git zip unzip zlib-dev coreutils \
     && : "---------- Imagemagick ----------" \
     && pecl install imagick \
     && docker-php-ext-enable imagick \
