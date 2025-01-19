@@ -8,12 +8,6 @@ RUN set -eux \
         tzdata \
     && update-ca-certificates \
     && apk add --virtual .build-deps $PHPIZE_DEPS git zip unzip zlib-dev coreutils \
-    && : "---------- Imagemagick ----------" \
-    && apk add --no-cache --virtual .imagick-build-dependencies imagemagick-dev \
-    && apk add imagemagick freetype gettext \
-    && pecl install imagick \
-    && docker-php-ext-enable imagick \
-    && apk del .imagick-build-dependencies \
     && : "---------- GD ----------" \
     && apk add --no-cache --virtual .gd-build-dependencies freetype-dev libjpeg-turbo-dev libpng-dev vips-dev \
     && apk add vips \
