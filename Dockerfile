@@ -7,6 +7,8 @@ RUN set -eux \
         ca-certificates \
         tzdata \
         imagemagick \
+        ripgrep \
+        jq \
     && update-ca-certificates
 
 RUN curl -sSLf \
@@ -26,10 +28,7 @@ RUN install-php-extensions \
     imagick \
     exif \
     pcntl \
-    soap \
-    mbstring \
-    ctype \
-    dom
+    soap
 
 RUN rm -rf /var/cache/apk/* /var/tmp/* /tmp/*
     
@@ -37,19 +36,9 @@ RUN mv /usr/local/etc/php/php.ini-production ${PHP_INI_DIR}/php.ini
 
 COPY custom.ini ${PHP_INI_DIR}/conf.d/99-custom.ini
 
-RUN EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')" \
-    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")" \
-    if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ] \
-    then \
-        >&2 echo 'ERROR: Invalid installer checksum' \
-        rm composer-setup.php \
-        exit 1 \
-    fi \
-    php composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer \
-    RESULT=$? \
-    rm composer-setup.php \
-    chmod +x /usr/local/bin/composer
+COPY composer.sh composer.sh
+
+RUN chmod +x composer.sh && ./composer.sh && rm composer.sh
 
 WORKDIR /srv
 
