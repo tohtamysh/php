@@ -10,8 +10,8 @@ RUN set -eux \
     && update-ca-certificates
 
 RUN curl -sSLf \
-		-o /usr/local/bin/install-php-extensions \
-		https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
+	-o /usr/local/bin/install-php-extensions \
+	https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
 	chmod +x /usr/local/bin/install-php-extensions
 
 RUN install-php-extensions \
@@ -35,7 +35,7 @@ RUN rm -rf /var/cache/apk/* /var/tmp/* /tmp/*
     
 RUN mv /usr/local/etc/php/php.ini-production ${PHP_INI_DIR}/php.ini
 
-COPY conf.d/99-custom.ini ${PHP_INI_DIR}/conf.d/99-custom.ini
+COPY custom.ini ${PHP_INI_DIR}/conf.d/99-custom.ini
 
 RUN EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')" \
     php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
