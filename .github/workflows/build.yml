@@ -19,10 +19,12 @@ jobs:
           DOCKER_IMAGE=ghcr.io/tohtamysh/php
           VERSION=$(echo "${GITHUB_REF#refs/tags/}" | sed -e 's,.*/\(.*\),\1,')
           VERSION=$(echo $VERSION | sed -e 's/^v//')
-          MAJOR=`echo $VERSION | cut -d. -f1`
-          MINOR=`echo $VERSION | cut -d. -f2`
-          REVISION=`echo $VERSION | cut -d. -f3`
-          TAGS="${DOCKER_IMAGE}:${MAJOR}.${MINOR},${DOCKER_IMAGE}:${MAJOR}.${MINOR}.${REVISION}"
+          V1=`echo $VERSION | cut -d- -f1`
+          V2=`echo $VERSION | cut -d- -f2`
+          MAJOR=`echo $V1 | cut -d. -f1`
+          MINOR=`echo $V1 | cut -d. -f2`
+          REVISION=`echo $V1 | cut -d. -f3`
+          TAGS="${DOCKER_IMAGE}:${MAJOR}.${MINOR},${DOCKER_IMAGE}:${MAJOR}.${MINOR}.${REVISION},${DOCKER_IMAGE}:${VERSION}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
       
