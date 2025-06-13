@@ -22,7 +22,7 @@ jobs:
           MAJOR=`echo $VERSION | cut -d. -f1`
           MINOR=`echo $VERSION | cut -d. -f2`
           REVISION=`echo $VERSION | cut -d. -f3`
-          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${MAJOR},${DOCKER_IMAGE}:${MAJOR}.${MINOR},${DOCKER_IMAGE}:${MAJOR}.${MINOR}.${REVISION}"
+          TAGS="${DOCKER_IMAGE}:${MAJOR}.${MINOR},${DOCKER_IMAGE}:${MAJOR}.${MINOR}.${REVISION}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
       
