@@ -1,4 +1,4 @@
-FROM php:8.4.8-fpm-alpine
+FROM php:8.4.10-fpm-alpine
 
 RUN set -eux \
     && apk update \
@@ -8,7 +8,6 @@ RUN set -eux \
         tzdata \
         imagemagick \
         ripgrep \
-        jq \
     && update-ca-certificates
 
 RUN curl -sSLf \
